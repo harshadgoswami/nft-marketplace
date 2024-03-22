@@ -7,8 +7,7 @@ import contract from "../../public/contracts/NftMarket.json";
 import { NftMarketContract } from "@_types/nftMarketContract";
 
 const NETWORKS = {
-  "5777": "Ganache",
-  "3": "Ropsten"
+  "11155111": "Sepolia"
 }
 
 type NETWORK = typeof NETWORKS;
@@ -30,11 +29,11 @@ export function withSession(handler: any) {
   })
 }
 
-const url = process.env.NODE_ENV === "production" ? 
-  process.env.INFURA_ROPSTEN_URL : 
+const url = process.env.NODE_ENV === "production" ?
+  process.env.INFURA_ROPSTEN_URL :
   "http://127.0.0.1:7545";
 
-export const addressCheckMiddleware = async (req: NextApiRequest & { session: Session}, res: NextApiResponse) => {
+export const addressCheckMiddleware = async (req: NextApiRequest & { session: Session }, res: NextApiResponse) => {
   return new Promise(async (resolve, reject) => {
     const message = req.session.get("message-session");
     const provider = new ethers.providers.JsonRpcProvider(url);
@@ -44,14 +43,14 @@ export const addressCheckMiddleware = async (req: NextApiRequest & { session: Se
       provider
     ) as unknown as NftMarketContract;
 
-    let nonce: string | Buffer = 
+    let nonce: string | Buffer =
       "\x19Ethereum Signed Message:\n" +
-      JSON.stringify(message).length + 
+      JSON.stringify(message).length +
       JSON.stringify(message);
-    
+
     nonce = util.keccak(Buffer.from(nonce, "utf-8"));
     const { v, r, s } = util.fromRpcSig(req.body.signature);
-    const pubKey = util.ecrecover(util.toBuffer(nonce), v,r,s);
+    const pubKey = util.ecrecover(util.toBuffer(nonce), v, r, s);
     const addrBuffer = util.pubToAddress(pubKey);
     const address = util.bufferToHex(addrBuffer);
 
